@@ -1,0 +1,34 @@
+name: "Report Update"
+
+on:
+  workflow_dispatch:
+  repository_dispatch:
+    types: [table_update_trigger]
+
+permissions:
+      id-token: write
+      contents: write
+
+jobs:
+  tableUpdate:
+    name: "Report Update"
+    environment: prd    
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: "Checkout Repo"
+      uses: actions/checkout@v2
+
+    - name: Login
+      uses: azure/login@v2
+      with:
+        client-id: ${{ secrets.AZURE_CLIENT_ID }}
+        tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+        subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+        enable-AzPSSession: true
+        
+    - name: "PowerShell"
+      uses: azure/powershell@v2
+      with:
+        inlineScript: './scripts/csv_update.ps1 -saName ${{ secrets.SA_NAME }} -saRGName ${{ secrets.SA_RG_NAME }} -tableName ${{ secrets.TABLE_NAME }}'
+        azPSVersion: "latest"
